@@ -1,0 +1,29 @@
+version: '3.5'
+
+services:
+  user_db:
+    container_name: user_db
+    image: postgres
+    ports:
+      - "54322:5432"
+    volumes:
+      - user_db:/var/lib/postgresql
+    environment:
+      POSTGRES_DB: user
+      POSTGRES_PASSWORD: user_54321
+    networks:
+      - user_network
+    restart: unless-stopped
+
+ 
+  
+
+
+networks:
+  user_network:
+    driver: bridge
+
+volumes:
+  user_db: {}
+  # minio_storage: {}
+

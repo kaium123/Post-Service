@@ -1,28 +1,12 @@
-// Application
-//
-// Application description
-//
-//	Schemes: http
-//	Host: localhost:8080
-//	BasePath: /api
-//	Version: 0.0.1
-//
-//	Consumes:
-//	- application/json
-//
-//	Produces:
-//	- application/json
-//
-// swagger:meta
 package route
 
 import (
-	"auth/common/logger"
-	"auth/controller"
-	"auth/db"
-	"auth/repository"
-	"auth/service"
 	"net/http"
+	"post/common/logger"
+	"post/controller"
+	"post/db"
+	"post/repository"
+	"post/service"
 	"strings"
 
 	"github.com/gin-contrib/cors"
@@ -46,16 +30,15 @@ func Setup() *gin.Engine {
 
 	raventClient := logger.NewRavenClient()
 	logger := logger.NewLogger(raventClient)
-	repo := repository.NewUserRepository(db, logger)
-	service := service.NewUserService(repo)
-	userController := controller.NewUserController(service)
+	repo := repository.NewPostRepository(db, logger)
+	service := service.NewPostService(repo)
+	postController := controller.NewPostController(service)
 
-	user := api.Group("/user")
+	post := api.Group("/post")
 
-	user.GET("/:sign-in", userController.SignIn)
-	user.POST("/register", userController.Register)
-	//user.POST("/update/:post_id", postController.UpdatePost)
-	// post.GET("/list", postController.AllPost)
+	post.POST("/create", postController.CreatePost)
+	post.GET("/view/:id", postController.ViewPost)
+	post.POST("/update/:id", postController.UpdatePost)
 	return r
 }
 

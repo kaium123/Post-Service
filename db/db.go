@@ -4,9 +4,8 @@ import (
 	"database/sql"
 	"log"
 
-	"github.com/spf13/viper"
 	_ "github.com/lib/pq" // Import the PostgreSQL driver
-
+	"github.com/spf13/viper"
 )
 
 var db *sql.DB
@@ -26,21 +25,14 @@ func InitDB() *sql.DB {
 		log.Fatal(err)
 	}
 
-	// Create the user table if it doesn't exist
-	_, err = db.Exec(`
-		CREATE TABLE IF NOT EXISTS users (
+	createTableSQL := `
+		CREATE TABLE  IF NOT EXISTS  posts (
 			id SERIAL PRIMARY KEY,
-			email TEXT UNIQUE,
-			password TEXT,
-			name TEXT,
-			user_name TEXT,
-			phone TEXT,
-			website TEXT,
-			bio TEXT,
-			gender TEXT,
-			profile_pic TEXT
+			content TEXT,
+			user_id INT
 		)
-	`)
+    `
+	_, err = db.Exec(createTableSQL)
 	if err != nil {
 		log.Fatal(err)
 	}

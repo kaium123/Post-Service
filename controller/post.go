@@ -24,18 +24,19 @@ func (c *PostController) CreatePost(ginContext *gin.Context) {
 
 	var post models.Post
 	if err := ginContext.Bind(&post); err != nil {
-		logger.LogError("failed to query estimate ", err)
+		logger.LogError(err)
 		ginContext.AbortWithStatusJSON(http.StatusBadRequest, gin.H{"error": err.Error()})
 		return
 	}
 
-	if err := c.service.CreatePost(&post); err != nil {
-		logger.LogError("failed to query user ", err)
+	id,err := c.service.CreatePost(&post);
+	if  err != nil {
+		logger.LogError(err)
 		ginContext.AbortWithStatusJSON(http.StatusBadRequest, gin.H{"error": err.Error()})
 		return
 	}
 
-	ginContext.JSON(http.StatusCreated, gin.H{"post": post})
+	ginContext.JSON(http.StatusCreated, gin.H{"id": id})
 
 }
 
@@ -51,7 +52,7 @@ func (c *PostController) ViewPost(ginContext *gin.Context) {
 
 	post, err := c.service.ViewPost(postID)
 	if err != nil {
-		logger.LogError("failed to query estimate ", err)
+		logger.LogError( err)
 		ginContext.AbortWithStatusJSON(http.StatusBadRequest, gin.H{"error": err.Error()})
 		return
 	}
@@ -64,7 +65,7 @@ func (c *PostController) UpdatePost(ginContext *gin.Context) {
 
 	var post models.Post
 	if err := ginContext.Bind(&post); err != nil {
-		logger.LogError("failed to query estimate ", err)
+		logger.LogError( err)
 		ginContext.AbortWithStatusJSON(http.StatusBadRequest, gin.H{"error": err.Error()})
 		return
 	}
@@ -79,7 +80,7 @@ func (c *PostController) UpdatePost(ginContext *gin.Context) {
 
 	post.ID = postID
 	if err := c.service.UpdatePost(&post); err != nil {
-		logger.LogError("failed to query user ", err)
+		logger.LogError( err)
 		ginContext.AbortWithStatusJSON(http.StatusBadRequest, gin.H{"error": err.Error()})
 		return
 	}

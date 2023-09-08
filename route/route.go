@@ -5,13 +5,18 @@ import (
 	"post/common/logger"
 	"post/controller"
 	"post/db"
+	"post/middlewares"
+	"post/pb"
+	"post/redis"
 	"post/repository"
 	"post/service"
+
 	"strings"
 
 	"github.com/gin-contrib/cors"
 	"github.com/gin-gonic/gin"
 	"github.com/spf13/viper"
+	"google.golang.org/grpc"
 )
 
 func Setup() *gin.Engine {
@@ -27,18 +32,55 @@ func Setup() *gin.Engine {
 	api := r.Group("/api")
 
 	db := db.InitDB()
+	conn, err := grpc.Dial(viper.GetString("ATTACHMENTURL"), grpc.WithInsecure())
+	if err != nil {
+		panic(err)
+	}
+
+	gRPCCLient := pb.NewAttachmentServiceClient(conn)
 
 	raventClient := logger.NewRavenClient()
 	logger := logger.NewLogger(raventClient)
-	repo := repository.NewPostRepository(db, logger)
-	service := service.NewPostService(repo)
-	postController := controller.NewPostController(service)
+	postRepo := repository.NewPostRepository(db, logger)
+	redisConn := redis.NewRedisDb()
+	redisRepo := repository.NewRedisRepository(redisConn, logger)
+	postService := service.NewPostService(gRPCCLient, postRepo, redisRepo)
+	postController := controller.NewPostController(postService)
 
-	post := api.Group("/post")
-
+	post := api.Group("/post").Use(middlewares.Auth())
 	post.POST("/create", postController.CreatePost)
 	post.GET("/view/:id", postController.ViewPost)
 	post.POST("/update/:id", postController.UpdatePost)
+
+	// reactRepo := repository.NewReactRepository(db, logger)
+	// reactService := service.NewReactService(reactRepo)
+	// reactController := controller.NewReactController(reactService)
+
+	// react := api.Group("/react")
+
+	// react.POST("/create", reactController.CreateReact)
+	// react.GET("/view/:id", reactController.ViewReact)
+	// react.POST("/update/:id", reactController.UpdateReact)
+
+	// commentRepo := repository.NewCommentRepository(db, logger)
+	// commentService := service.NewCommentService(commentRepo)
+	// commentController := controller.NewCommentController(commentService)
+
+	// comment := api.Group("/comment")
+
+	// comment.POST("/create", commentController.CreateComment)
+	// comment.GET("/view/:id", commentController.ViewComment)
+	// comment.POST("/update/:id", commentController.UpdateComment)
+
+	// shareRepo := repository.NewShareRepository(db, logger)
+	// shareService := service.NewShareService(shareRepo)
+	// shareController := controller.NewShareController(shareService)
+
+	// share := api.Group("/share")
+
+	// share.POST("/create", shareController.CreateShare)
+	// share.GET("/view/:id", shareController.ViewShare)
+	// share.POST("/update/:id", shareController.UpdateShare)
 	return r
 }
 

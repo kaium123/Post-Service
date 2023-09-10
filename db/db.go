@@ -34,5 +34,44 @@ func InitDB() *sql.DB {
 	if err != nil {
 		log.Fatal(err)
 	}
+
+	createTableSQL = `
+		CREATE TABLE  IF NOT EXISTS  reacts (
+			id SERIAL PRIMARY KEY,
+			post_id INT,
+			reacted_user_id INT,
+			post_type TEXT
+		)
+    `
+	_, err = db.Exec(createTableSQL)
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	createTableSQL = `
+		CREATE TABLE  IF NOT EXISTS  comments (
+			id SERIAL PRIMARY KEY,
+			post_id INT,
+			commented_user_id INT,
+			content TEXT
+
+		)
+    `
+	_, err = db.Exec(createTableSQL)
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	createTableSQL = `
+		CREATE TABLE  IF NOT EXISTS  shares (
+			id SERIAL PRIMARY KEY,
+			post_id INT,
+			shared_user_id INT
+		)
+    `
+	_, err = db.Exec(createTableSQL)
+	if err != nil {
+		log.Fatal(err)
+	}
 	return db
 }

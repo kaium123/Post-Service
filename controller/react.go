@@ -6,7 +6,6 @@ import (
 	"post/errors"
 	"post/models"
 	"post/service"
-	"strconv"
 
 	"github.com/gin-gonic/gin"
 )
@@ -20,8 +19,10 @@ func NewReactController(service service.ReactServiceInterface) *ReactController 
 	return &ReactController{service: service}
 }
 
-func (c *ReactController) CreateReact(ginContext *gin.Context) {
+func (c *ReactController) Like(ginContext *gin.Context) {
 
+	userID := int(ginContext.GetInt64("user_id"))
+	logger.LogInfo(userID)
 	var React models.React
 	if err := ginContext.Bind(&React); err != nil {
 		logger.LogError(err)
@@ -29,6 +30,7 @@ func (c *ReactController) CreateReact(ginContext *gin.Context) {
 		return
 	}
 
+	React.ReactedUserID = uint(userID)
 	if err := c.service.CreateReact(&React); err != nil {
 		logger.LogError(err)
 		ginContext.AbortWithStatusJSON(http.StatusBadRequest, gin.H{"error": err.Error()})
@@ -39,29 +41,9 @@ func (c *ReactController) CreateReact(ginContext *gin.Context) {
 
 }
 
-func (c *ReactController) ViewReact(ginContext *gin.Context) {
+func (c *ReactController) Unlike(ginContext *gin.Context) {
 
-	ReactIDString := ginContext.Params.ByName("id")
-	ReactID, err := strconv.Atoi(ReactIDString)
-	if err != nil {
-		logger.LogError(err)
-		ginContext.AbortWithStatusJSON(http.StatusBadRequest, gin.H{"error": err})
-		return
-	}
-
-	React, err := c.service.ViewReact(ReactID)
-	if err != nil {
-		logger.LogError(err)
-		ginContext.AbortWithStatusJSON(http.StatusBadRequest, gin.H{"error": err.Error()})
-		return
-	}
-
-	ginContext.JSON(http.StatusCreated, gin.H{"React": React})
-
-}
-
-func (c *ReactController) UpdateReact(ginContext *gin.Context) {
-
+	userID := int(ginContext.GetInt64("user_id"))
 	var React models.React
 	if err := ginContext.Bind(&React); err != nil {
 		logger.LogError(err)
@@ -69,16 +51,8 @@ func (c *ReactController) UpdateReact(ginContext *gin.Context) {
 		return
 	}
 
-	ReactIDString := ginContext.Params.ByName("id")
-	ReactID, err := strconv.Atoi(ReactIDString)
-	if err != nil {
-		logger.LogError(err)
-		ginContext.AbortWithStatusJSON(http.StatusBadRequest, gin.H{"error": err})
-		return
-	}
-
-	React.ID = ReactID
-	if err := c.service.UpdateReact(&React); err != nil {
+	React.ReactedUserID = uint(userID)
+	if err := c.service.Unlike(&React); err != nil {
 		logger.LogError(err)
 		ginContext.AbortWithStatusJSON(http.StatusBadRequest, gin.H{"error": err.Error()})
 		return

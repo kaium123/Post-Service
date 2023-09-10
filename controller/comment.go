@@ -87,3 +87,45 @@ func (c *CommentController) UpdateComment(ginContext *gin.Context) {
 	ginContext.JSON(http.StatusCreated, gin.H{"Comment": Comment})
 
 }
+
+func (c *CommentController) AllComment(ginContext *gin.Context) {
+
+	postIDString := ginContext.Params.ByName("post_id")
+	postID, err := strconv.Atoi(postIDString)
+	if err != nil {
+		logger.LogError(err)
+		ginContext.AbortWithStatusJSON(http.StatusBadRequest, gin.H{"error": err})
+		return
+	}
+
+	Comment, err := c.service.AllComment(postID)
+	if err != nil {
+		logger.LogError(err)
+		ginContext.AbortWithStatusJSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+		return
+	}
+
+	ginContext.JSON(http.StatusCreated, gin.H{"Comment": Comment})
+
+}
+
+func (c *CommentController) Delete(ginContext *gin.Context) {
+
+	CommentIDString := ginContext.Params.ByName("id")
+	CommentID, err := strconv.Atoi(CommentIDString)
+	if err != nil {
+		logger.LogError(err)
+		ginContext.AbortWithStatusJSON(http.StatusBadRequest, gin.H{"error": err})
+		return
+	}
+
+	err = c.service.Delete(CommentID)
+	if err != nil {
+		logger.LogError(err)
+		ginContext.AbortWithStatusJSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+		return
+	}
+
+	ginContext.JSON(http.StatusCreated, gin.H{"Comment": "successfully deleted"})
+
+}

@@ -44,33 +44,35 @@ func Setup() *gin.Engine {
 	postRepo := repository.NewPostRepository(db, logger)
 	redisConn := redis.NewRedisDb()
 	redisRepo := repository.NewRedisRepository(redisConn, logger)
-	postService := service.NewPostService(gRPCCLient, postRepo, redisRepo)
+	reactRepo := repository.NewReactRepository(db, logger)
+	reactService := service.NewReactService(reactRepo)
+	reactController := controller.NewReactController(reactService)
+
+	react := api.Group("/react").Use(middlewares.Auth())
+
+	react.POST("/like", reactController.Like)
+	react.POST("/unlike", reactController.Unlike)
+
+	commentRepo := repository.NewCommentRepository(db, logger)
+	commentService := service.NewCommentService(commentRepo)
+	commentController := controller.NewCommentController(commentService)
+
+	comment := api.Group("/comment").Use(middlewares.Auth())
+
+	comment.POST("/create", commentController.CreateComment)
+	comment.GET("/view/:id", commentController.ViewComment)
+	comment.POST("/update/:id", commentController.UpdateComment)
+	comment.GET("/list/:post_id", commentController.AllComment)
+	comment.DELETE("/delete/:id", commentController.Delete)
+
+	postService := service.NewPostService(gRPCCLient, postRepo, commentRepo, reactRepo, redisRepo)
 	postController := controller.NewPostController(postService)
 
 	post := api.Group("/post").Use(middlewares.Auth())
 	post.POST("/create", postController.CreatePost)
 	post.GET("/view/:id", postController.ViewPost)
 	post.POST("/update/:id", postController.UpdatePost)
-
-	// reactRepo := repository.NewReactRepository(db, logger)
-	// reactService := service.NewReactService(reactRepo)
-	// reactController := controller.NewReactController(reactService)
-
-	// react := api.Group("/react")
-
-	// react.POST("/create", reactController.CreateReact)
-	// react.GET("/view/:id", reactController.ViewReact)
-	// react.POST("/update/:id", reactController.UpdateReact)
-
-	// commentRepo := repository.NewCommentRepository(db, logger)
-	// commentService := service.NewCommentService(commentRepo)
-	// commentController := controller.NewCommentController(commentService)
-
-	// comment := api.Group("/comment")
-
-	// comment.POST("/create", commentController.CreateComment)
-	// comment.GET("/view/:id", commentController.ViewComment)
-	// comment.POST("/update/:id", commentController.UpdateComment)
+	post.GET("/list", postController.AllPost)
 
 	// shareRepo := repository.NewShareRepository(db, logger)
 	// shareService := service.NewShareService(shareRepo)

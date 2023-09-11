@@ -1,39 +1,23 @@
 version: '3.5'
 
 services:
-  post_db:
-    container_name: post_db
-    image: postgres
+  post:  # New service
+    container_name: post
+    build:
+      context: .
     ports:
-      - "54323:5432"
-    volumes:
-      - post_db:/var/lib/postgresql
-    environment:
-      POSTGRES_DB: post
-      POSTGRES_PASSWORD: post_54321
+      - "8090:8090"
     networks:
-      - social_media_network
+      - auth-service_social_media_network
     restart: unless-stopped
-
-  social_media_redis:
-    container_name: social_media_redis
-    image: 'redis:7-alpine'
-    environment:
-      - ALLOW_EMPTY_PASSWORD=yes
-      - REDIS_PORT_NUMBER=6379
-    networks:
-        - social_media_network
-    ports:
-      - '63792:6379'
+    env_file:
+      - base.env
  
   
 
 
 networks:
-  social_media_network:
-    driver: bridge
-
-volumes:
-  post_db: {}
-  # minio_storage: {}
+  auth-service_social_media_network:
+    external:
+      name: auth-service_social_media_network  # Define the network as external
 

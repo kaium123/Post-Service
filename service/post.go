@@ -16,7 +16,7 @@ type PostServiceInterface interface {
 	CreatePost(post *models.Post) (int, error)
 	ViewPost(postID int) (*models.Post, error)
 	UpdatePost(post *models.Post) error
-	AllPosts(userID int, accessToken string,requestParams models.RequestParams) ([]*models.Post, error)
+	AllPosts(userID int, accessToken string, requestParams models.RequestParams) ([]*models.Post, error)
 }
 
 type PostService struct {
@@ -124,8 +124,8 @@ func (s *PostService) UpdatePost(post *models.Post) error {
 	return s.repository.Update(post)
 }
 
-func (s *PostService) AllPosts(userID int, accessToken string,requestParams models.RequestParams) ([]*models.Post, error) {
-	url := "http://localhost:8089/api/user/view-friends" // Add "http://" as the scheme
+func (s *PostService) AllPosts(userID int, accessToken string, requestParams models.RequestParams) ([]*models.Post, error) {
+	url := "http://auth:8089/api/user/view-friends"
 	method := "GET"
 	byteData, err := sendHttpRequest(accessToken, url, method)
 	if err != nil {
@@ -144,7 +144,7 @@ func (s *PostService) AllPosts(userID int, accessToken string,requestParams mode
 	for _, friend := range friends {
 		ids = append(ids, friend.ID)
 	}
-	posts, err := s.repository.AllPosts(ids,requestParams)
+	posts, err := s.repository.AllPosts(ids, requestParams)
 
 	logger.LogInfo(len(posts))
 
